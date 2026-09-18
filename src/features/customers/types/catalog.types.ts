@@ -80,6 +80,7 @@ export interface CustomerVariantListItemDto {
   primaryImage: string | null;
   outOfStock?: boolean;
   videoUrl: string | null;
+  isDefault?: boolean;
   // Full list of sellable pack sizes for this item - an item can have any
   // number of pack sizes, each independently priced. `sku`/`basePrice`/
   // `salePrice`/`measurement` above mirror the default (or first) entry here
@@ -148,4 +149,28 @@ export interface CustomerRelatedVariantDto {
   } | null;
   inStock: boolean;
   stockQuantity: number;
+}
+
+export interface CustomerPopularSearchItem {
+  keyword: string;
+  count: number;
+}
+
+export interface CustomerPopularCategoryItem {
+  id: string;
+  name: string;
+  image: string | null;
+  count: number;
+}
+
+export interface CustomerPopularSearchResponse {
+  popularSearches: CustomerPopularSearchItem[];
+  popularCategories: CustomerPopularCategoryItem[];
+}
+
+export interface CustomerTrackSearchInput {
+  keyword: string;
+  type?: "search" | "product" | "variant" | "category";
+  entityId?: string;
+  resultsCount?: number;
 }

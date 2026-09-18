@@ -29,6 +29,7 @@ import { useMainNavigation } from "@/hooks/use-main-navigation";
 import { useCustomerProfile } from "@/features/customers/hooks/use-customer-profile";
 import type { CustomerCategoryDto } from "@/features/customers/types/catalog.types";
 import { CategoryNavDropdown, resolveCategoryIcon } from "./CategoryNavDropdown";
+import { HeaderSearchBar } from "./HeaderSearchBar";
 
 /** Shared styling for the row-2 nav links so active/idle states stay in step. */
 function navLinkClass(isActive: boolean) {
@@ -45,23 +46,28 @@ function HeaderIconLink({
   href,
   label,
   badge,
+  showZero = false,
   children,
 }: {
   href: string;
   label: string;
   badge?: number;
+  showZero?: boolean;
   children: React.ReactNode;
 }) {
+  const hasBadge = typeof badge === "number" && (badge > 0 || showZero);
+  const displayCount = typeof badge === "number" ? badge : 0;
+
   return (
     <Link
       href={href}
-      aria-label={badge ? `${label} (${badge})` : label}
+      aria-label={hasBadge ? `${label} (${displayCount})` : label}
       className="relative grid place-items-center w-9 h-9 -m-1.5 rounded-full text-white transition-colors hover:bg-white/15"
     >
       {children}
-      {badge ? (
-        <span className="absolute top-0.5 right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-theme-secondary text-theme-secondary-fg text-[10px] font-bold flex items-center justify-center leading-none">
-          {badge > 99 ? "99+" : badge}
+      {hasBadge ? (
+        <span className="absolute top-0.5 right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-theme-secondary text-theme-secondary-fg text-[10px] font-bold flex items-center justify-center leading-none shadow-xs">
+          {displayCount > 99 ? "99+" : displayCount}
         </span>
       ) : null}
     </Link>
@@ -136,7 +142,8 @@ export function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const { data: session, status } = useSession();
-  const isAuthenticated = status === "authenticated";
+  const { data: profile } = useCustomerProfile();
+  const isAuthenticated = status === "authenticated" || Boolean(profile);
   // `status` is "loading" until /api/auth/session resolves on every page load.
   // Treating that as logged-out would flash the Login button at signed-in users,
   // so the account cell renders a placeholder until the session is known.
@@ -148,11 +155,10 @@ export function Header() {
     const timer = setTimeout(() => setAuthGraceExpired(true), 1500);
     return () => clearTimeout(timer);
   }, [status]);
-  const isAuthLoading = status === "loading" && !authGraceExpired;
-  const userRole = session?.user?.role as string | undefined;
+  const isAuthLoading = status === "loading" && !authGraceExpired && !profile;
+  const userRole = (session?.user?.role || (profile as any)?.role) as string | undefined;
   const isAdminUser = userRole === ROLES.ADMIN || userRole === ROLES.STAFF;
   const accountHref = isAdminUser ? "/admin/dashboard" : "/profile";
-  const { data: profile } = useCustomerProfile();
 
   // Get user name and initials for authenticated header state
   const userName = profile?.name || session?.user?.name || "";
@@ -160,11 +166,12 @@ export function Header() {
     if (userName && userName.trim().length > 0) {
       return getInitials(userName) || "U";
     }
-    if (session?.user?.email) {
-      return session.user.email.slice(0, 2).toUpperCase();
+    const email = session?.user?.email || profile?.email;
+    if (email) {
+      return email.slice(0, 2).toUpperCase();
     }
     return "U";
-  }, [userName, session?.user?.email]);
+  }, [userName, session?.user?.email, profile?.email]);
 
   // Real-time badge counts from customer endpoints (only enabled when authenticated)
   const { data: wishlistCount = 0 } = useCustomerWishlistCount();
@@ -183,17 +190,6 @@ export function Header() {
     navCategories,
     isLoading: isCategoriesLoading,
   } = useMainNavigation();
-
-  const [searchTerm, setSearchTerm] = React.useState("");
-  const handleSearchSubmit = React.useCallback(
-    (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      const q = searchTerm.trim();
-      router.push(q ? `/products?search=${encodeURIComponent(q)}` : "/products");
-    },
-    [router, searchTerm]
-  );
-
 
   const menuRef = React.useRef<HTMLDivElement>(null);
   const buttonRef = React.useRef<HTMLDivElement>(null);
@@ -251,33 +247,8 @@ export function Header() {
             />
           </Link>
 
-          {/* Search */}
-          <form
-            role="search"
-            onSubmit={handleSearchSubmit}
-            className="flex-1 max-w-[620px] mx-auto"
-          >
-            <div className="relative">
-              <label htmlFor="site-search" className="sr-only">
-                Search products
-              </label>
-              <input
-                id="site-search"
-                type="search"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search..."
-                className="w-full h-10 lg:h-11 rounded-full bg-white pl-5 pr-12 text-sm text-theme-text-primary placeholder:text-theme-text-muted shadow-sm ring-1 ring-transparent transition-shadow focus:outline-none focus:ring-2 focus:ring-white/70"
-              />
-              <button
-                type="submit"
-                aria-label="Search"
-                className="absolute right-1 top-1/2 -translate-y-1/2 grid place-items-center w-9 h-9 rounded-full text-theme-text-primary hover:bg-secondary-50 hover:text-secondary-600 transition-colors cursor-pointer"
-              >
-                <Search className="w-[18px] h-[18px]" strokeWidth={2} />
-              </button>
-            </div>
-          </form>
+          {/* Direct Interactive Search Bar with Live Inline Dropdown */}
+          <HeaderSearchBar />
 
           {/* Right cluster (desktop) */}
           <div className="hidden lg:flex items-center gap-5 shrink-0">
@@ -334,6 +305,7 @@ export function Header() {
               href={isAuthenticated ? "/cart" : "/login?callbackUrl=/cart"}
               label="Cart"
               badge={cartCount}
+              showZero
             >
               <ShoppingBag className="w-[21px] h-[21px]" strokeWidth={1.75} />
             </HeaderIconLink>
@@ -646,6 +618,23 @@ export function Header() {
             );
           }
 
+          if (item.text === "Search" || item.path === "/search") {
+            return (
+              <NavButton
+                key={item.id}
+                variant="bottom"
+                icon={item.icon}
+                text={item.text}
+                onClick={() => {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                  const searchInput = document.getElementById("site-search");
+                  searchInput?.focus();
+                }}
+                isActive={false}
+              />
+            );
+          }
+
           return (
             <NavButton
               key={item.id}
@@ -659,6 +648,7 @@ export function Header() {
           );
         })}
       </div>
+
     </header>
   );
 }

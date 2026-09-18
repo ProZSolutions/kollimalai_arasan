@@ -32,6 +32,7 @@ export function LowestPrice() {
     pageSize: 20,
     sortBy: "createdAt",
     sortOrder: "desc",
+    onlyDefault: true,
   });
 
   const { wishlistedIds } = useWishlistedUnitPriceIds({ enabled: !!session });
@@ -41,9 +42,17 @@ export function LowestPrice() {
 
   const products: StorefrontProduct[] = React.useMemo(() => {
     const all = (response?.data ?? []).map(mapVariantToStorefrontProduct);
-    return all.filter((product) =>
+    const discounted = all.filter((product) =>
       product.unitPrices.some((up) => up.sellingPrice < up.basePrice)
     );
+    const productMap = new Map<string, StorefrontProduct>();
+    for (const item of discounted) {
+      const existing = productMap.get(item.productId);
+      if (!existing || (item.isDefault && !existing.isDefault)) {
+        productMap.set(item.productId, item);
+      }
+    }
+    return Array.from(productMap.values());
   }, [response]);
 
   const showNotification = (msg: string) => {
@@ -56,27 +65,45 @@ export function LowestPrice() {
   };
 
   const handleAddToCart = (product: StorefrontProduct, unitPriceId?: string) => {
-    if (!session) return requireLogin();
     if (!unitPriceId) return;
     addToCart.mutate(
       { variantUnitPriceId: unitPriceId, quantity: 1 },
       {
         onSuccess: () => showNotification(`Added ${product.name} to cart`),
-        onError: () => showNotification("Could not add item to cart"),
+        onError: (err: any) => {
+          if (err?.status === 401 || err?.message?.toLowerCase().includes("login")) {
+            requireLogin();
+            return;
+          }
+          showNotification("Could not add item to cart");
+        },
       }
     );
   };
 
   const handleWishlistToggle = (product: StorefrontProduct, unitPriceId?: string) => {
-    if (!session) return requireLogin();
     if (!unitPriceId) return;
     if (wishlistedIds.has(unitPriceId)) {
       removeFromWishlist.mutate(unitPriceId, {
         onSuccess: () => showNotification(`Removed ${product.name} from wishlist`),
+        onError: (err: any) => {
+          if (err?.status === 401 || err?.message?.toLowerCase().includes("login")) {
+            requireLogin();
+            return;
+          }
+          showNotification("Could not remove item from wishlist");
+        },
       });
     } else {
       addToWishlist.mutate(unitPriceId, {
         onSuccess: () => showNotification(`Added ${product.name} to wishlist`),
+        onError: (err: any) => {
+          if (err?.status === 401 || err?.message?.toLowerCase().includes("login")) {
+            requireLogin();
+            return;
+          }
+          showNotification("Could not add item to wishlist");
+        },
       });
     }
   };

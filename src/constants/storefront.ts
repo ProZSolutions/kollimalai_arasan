@@ -188,11 +188,10 @@ export const footerSocialIcons: FooterSocialIcon[] = [
 ];
 
 export const readyToAssist = [
-  // Only the routes that exist are linked; the policy pages are still text.
   { label: "Track My Order", href: "/orders" },
-  "Terms & Conditions",
-  "Privacy Policy",
-  "Return & Refund Policy",
+  { label: "Terms & Conditions", href: "/terms-and-conditions" },
+  { label: "Privacy Policy", href: "/privacy-policy" },
+  { label: "Return & Refund Policy", href: "/return-refund-policy" },
   { label: "FAQ's", href: "/faqs" },
 ] as const;
 
@@ -345,5 +344,6 @@ export interface StorefrontProduct {
   name: string;
   image: string;
   outOfStock?: boolean;
+  isDefault?: boolean;
   unitPrices: StorefrontUnitPrice[];
 }
