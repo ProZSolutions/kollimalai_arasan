@@ -167,8 +167,8 @@ export const contacts = [
     id: 3,
     icon: ICONS.mail,
     title: "Mail",
-    value: "rithanyafoods@gmail.com",
-    link: "mailto:rithanyafoods@gmail.com",
+    value: "contact@kollimalaiarasan.com",
+    link: "mailto:contact@kollimalaiarasan.com",
   },
 ];
 
@@ -184,7 +184,7 @@ export const footerSocialIcons: FooterSocialIcon[] = [
   { id: 1, icon: ICONS.facebook, name: "facebook", href: "#" },
   { id: 2, icon: ICONS.instagram, name: "instagram", href: "#" },
   { id: 3, icon: ICONS.youtube, name: "youtube", href: "#" },
-  { id: 4, icon: ICONS.whatsapp1, name: "whatsapp", href: "#" },
+  { id: 4, icon: ICONS.whatsapp1, name: "whatsapp", href: "https://wa.me/918667380899" },
 ];
 
 export const readyToAssist = [
@@ -234,29 +234,29 @@ export const reviews = [
   {
     id: 1,
     image: PHOTOS.photo1,
-    name: "Mrs.Kavi P.,",
-    location: "Namakkal, TamilNadu",
+    name: "Mrs. Kavi P.,",
+    location: "Namakkal, Tamil Nadu",
     feedback:
-      "Kollimalai Arasan products are the perfect balance of taste and health. Healthy, pure, and made with care. These products never disappoint. Every bite feels homemade and fresh!",
+      "Kollimalai Arasan spices are extraordinarily pure and aromatic. The black pepper and green cardamom have an authentic mountain aroma that you simply cannot find in regular markets!",
     bg: "--red-50",
   },
   {
     id: 2,
     image: PHOTOS.photo2,
-    name: "Mr.Muni k.,",
-    location: "Salem, TamilNadu",
+    name: "Mr. Muni K.,",
+    location: "Salem, Tamil Nadu",
     bg: "--green-50",
     feedback:
-      "Kollimalai Arasan products are the perfect balance of taste and health. Healthy, pure, and made with care. These products never disappoint. Every bite feels homemade and fresh!",
+      "Fresh, authentic, and naturally grown produce directly from Kolli Hills. The cloves and traditional hill harvests are unmatched in quality and freshness.",
   },
   {
     id: 3,
     image: PHOTOS.photo3,
-    name: "Mrs.Thenmozhi A.,",
-    location: "Chennai, TamilNadu",
+    name: "Mrs. Thenmozhi A.,",
+    location: "Chennai, Tamil Nadu",
     bg: "--blue-50",
     feedback:
-      "Kollimalai Arasan products are the perfect balance of taste and health. Healthy, pure, and made with care. These products never disappoint. Every bite feels homemade and fresh!",
+      "The finest whole spices I've ordered online. Pure, organic Kolli Hills black pepper and aromatic cardamom. Excellent packaging and prompt delivery!",
   },
 ];
 
