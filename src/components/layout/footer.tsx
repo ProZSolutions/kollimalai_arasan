@@ -75,10 +75,10 @@ export function Footer() {
     // 3. Mail
     const companyEmail = company?.email?.trim();
     const mailValue =
-      companyEmail || defaultContacts[2]?.value || "rithanyafoods@gmail.com";
+      companyEmail || defaultContacts[2]?.value || "contact@kollimalaiarasan.com";
     const mailLink = companyEmail
       ? `mailto:${companyEmail}`
-      : defaultContacts[2]?.link || "mailto:rithanyafoods@gmail.com";
+      : defaultContacts[2]?.link || "mailto:contact@kollimalaiarasan.com";
 
     return [
       {
@@ -105,9 +105,14 @@ export function Footer() {
     ];
   }, [company]);
 
+  // WhatsApp Link for Social Links
+  const waLink = React.useMemo(() => {
+    return dynamicContacts.find((c) => c.id === 2)?.link || "https://wa.me/918667380899";
+  }, [dynamicContacts]);
+
   // Company Name
   const companyName =
-    company?.companyName?.trim() || "Rithanya Food Products and Exports";
+    company?.companyName?.trim() || "Kollimalai Arasan";
 
   // Company Logo
   const companyLogo = company?.logo ? getImageUrl(company.logo) : LOGOS.logo;
@@ -139,7 +144,7 @@ export function Footer() {
 
   const mapsUrl = React.useMemo(() => {
     if (!company?.address && !company?.city) {
-      return "https://www.google.com/maps/place/RITHU'S+SNACKS/@11.1971509,78.1334803,13.77z/data=!4m6!3m5!1s0x3babcf3326ff1e47:0xafbe7c7cb1da0dd4!8m2!3d11.1995895!4d78.1815903!16s%2Fg%2F11vlt_cxvy?entry=ttu";
+      return "https://www.google.com/maps/search/?api=1&query=Kolli+Hills+Tamil+Nadu";
     }
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(formattedLocation)}`;
   }, [company, formattedLocation]);
@@ -182,25 +187,29 @@ export function Footer() {
               </a>
 
               <div className="mt-5 flex items-center gap-3">
-                {footerSocialIcons.map((item) => (
-                  <a
-                    key={item.id}
-                    href={item.href ?? "#"}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={item.name}
-                    className="grid place-items-center w-8 h-8 rounded-md bg-secondary-500 hover:bg-secondary-600 transition-colors"
-                  >
-                    <Image
-                      src={item.icon}
-                      alt=""
-                      aria-hidden="true"
-                      width={16}
-                      height={16}
-                      className="w-4 h-4 brightness-0 invert"
-                    />
-                  </a>
-                ))}
+                {footerSocialIcons.map((item) => {
+                  const href =
+                    item.name === "whatsapp" ? waLink : (item.href ?? "#");
+                  return (
+                    <a
+                      key={item.id}
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={item.name}
+                      className="grid place-items-center w-8 h-8 rounded-md bg-secondary-500 hover:bg-secondary-600 transition-colors"
+                    >
+                      <Image
+                        src={item.icon}
+                        alt=""
+                        aria-hidden="true"
+                        width={16}
+                        height={16}
+                        className="w-4 h-4 brightness-0 invert"
+                      />
+                    </a>
+                  );
+                })}
               </div>
             </div>
 

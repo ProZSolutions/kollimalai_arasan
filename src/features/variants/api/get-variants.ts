@@ -44,6 +44,9 @@ export async function getCustomerVariants(
   if (params?.maxPrice !== undefined && params?.maxPrice !== null) {
     body.maxPrice = params.maxPrice;
   }
+  if (params?.onlyDefault !== undefined) {
+    body.onlyDefault = params.onlyDefault;
+  }
 
   const response = await apiClient.post<CustomerVariantListItemDto[]>(
     "/api/customer/variants",
@@ -164,6 +167,13 @@ export async function deleteAdminVariant(
 ) {
   return apiClient.delete(
     `/api/admin/products/${productUuid}/variants/${variantUuid}`
+  );
+}
+
+export async function bulkDeleteAdminVariants(uuids: string[]) {
+  return apiClient.post<{ success: boolean; count: number; message: string }>(
+    "/api/admin/variants/bulk-delete",
+    { uuids }
   );
 }
 

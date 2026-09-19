@@ -22,7 +22,7 @@ export function AboutOurStorySection() {
       id: "brand",
       icon: Award,
       label: "BRAND",
-      value: "Rithu's Snacks",
+      value: "Kollimalai Arasan",
     },
     {
       id: "range",
@@ -41,8 +41,8 @@ export function AboutOurStorySection() {
             <div className="relative w-full max-w-lg mx-auto">
               <div className="relative rounded-3xl overflow-hidden shadow-xl aspect-square sm:aspect-[4/3] lg:aspect-square w-full">
                 <Image
-                  src="/images/Aboutus_ourstory_img1.jpg"
-                  alt="Our Story - Rithu's Snacks"
+                  src="/images/kolli_spices_story.jpg"
+                  alt="Our Story - Kollimalai Arasan Spices: Black pepper, cardamom, cloves"
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, 50vw"
@@ -80,7 +80,7 @@ export function AboutOurStorySection() {
 
             {/* Description */}
             <p className="text-about-body text-sm sm:text-base leading-relaxed mb-8">
-              Rithanya Food Products and Exports was established in 2021 in Namakkal, Tamil Nadu, with a vision to deliver quality food products with a traditional touch, exceptional taste, and a strong focus on health and customer satisfaction.
+              Kollimalai Arasan was established in 2021 in Namakkal, Tamil Nadu, with a vision to deliver pure, farm-fresh spices directly from Kolli Hills—specializing in premium Spices: Black pepper, cardamom, cloves, and traditional natural products with uncompromised quality.
             </p>
 
             {/* 2x2 Fact Cards Grid */}

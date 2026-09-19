@@ -25,7 +25,7 @@ export function TasteTradition() {
             <div className="shrink-0 mx-auto sm:mx-0">
               <Image
                 src={LOGOS.logo}
-                alt="Snack4us - Rithu's"
+                alt="Kollimalai Arasan"
                 width={144}
                 height={144}
                 className="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl shadow-lg"
@@ -37,11 +37,10 @@ export function TasteTradition() {
                 Filling every home with
               </p>
               <h2 className="text-white font-extrabold text-3xl sm:text-4xl lg:text-5xl uppercase tracking-tight mt-1">
-                Taste &amp; Tradition
+                Purity &amp; Tradition
               </h2>
               <p className="mt-3 max-w-md text-[var(--neutral-900)] font-medium text-sm sm:text-base">
-                Every Box Carries Warmth, Care, and Tradition that brightens
-                your celebration.
+                Every pack carries pure Kolli Hills spices and natural harvests that enrich your kitchen and well-being.
               </p>
             </div>
           </div>

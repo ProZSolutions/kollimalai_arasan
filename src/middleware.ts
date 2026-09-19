@@ -73,6 +73,16 @@ export default auth(async (req) => {
     }
 
     if (pathname === "/admin/login") {
+      if (
+        req.nextUrl.searchParams.get("from") === "unauthorized" ||
+        req.nextUrl.searchParams.has("force")
+      ) {
+        const response = NextResponse.next();
+        response.cookies.delete("access_token");
+        response.cookies.delete("refresh_token");
+        return response;
+      }
+
       if (isAuthenticated && (userRole === "ADMIN" || userRole === "STAFF")) {
         const url = req.nextUrl.clone();
         url.pathname = "/admin/dashboard";
@@ -111,14 +121,19 @@ export default auth(async (req) => {
   }
 
   if ((pathname === "/login" || pathname === "/register") && isAuthenticated) {
-    const url = req.nextUrl.clone();
-    url.search = "";
-    if (userRole === "ADMIN" || userRole === "STAFF") {
-      url.pathname = "/admin/dashboard";
-    } else {
-      url.pathname = "/";
+    if (req.nextUrl.searchParams.get("from") === "unauthorized") {
+      const response = NextResponse.next();
+      response.cookies.delete("access_token");
+      response.cookies.delete("refresh_token");
+      return response;
     }
-    return applyCookies(NextResponse.redirect(url));
+    if (userRole === "ADMIN" || userRole === "STAFF") {
+      const url = req.nextUrl.clone();
+      url.search = "";
+      url.pathname = "/admin/dashboard";
+      return applyCookies(NextResponse.redirect(url));
+    }
+    // Allow customers to access login/register freely
   }
 
   return applyCookies(NextResponse.next());

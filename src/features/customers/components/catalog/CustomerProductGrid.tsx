@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { CustomerProductCard } from "./CustomerProductCard";
 import { CustomerVariantCard } from "./CustomerVariantCard";
 import { Sparkles } from "lucide-react";
@@ -21,7 +22,19 @@ export function CustomerProductGrid({
   onResetFilters,
   columns = 3,
 }: CustomerProductGridProps) {
-  const hasVariants = Boolean(variants && variants.length > 0);
+  const uniqueVariants = React.useMemo(() => {
+    if (!variants || variants.length === 0) return [];
+    const map = new Map<string, CustomerVariantListItemDto>();
+    for (const v of variants) {
+      const existing = map.get(v.productId);
+      if (!existing || (v.isDefault && !existing.isDefault)) {
+        map.set(v.productId, v);
+      }
+    }
+    return Array.from(map.values());
+  }, [variants]);
+
+  const hasVariants = uniqueVariants.length > 0;
   const hasProducts = Boolean(products && products.length > 0);
 
   if (!hasVariants && !hasProducts) {
@@ -31,7 +44,7 @@ export function CustomerProductGrid({
           <Sparkles className="h-7 w-7 text-theme-secondary" />
         </div>
         <h3 className="text-lg font-bold text-theme-text-primary mb-1">
-          No snacks matched your search
+          No products matched your search
         </h3>
         <p className="text-sm text-theme-text-subtle mb-6">
           Try clearing your active filters or searching for something else.
@@ -57,7 +70,7 @@ export function CustomerProductGrid({
   return (
     <div className={`grid ${gridColsClass} gap-5 sm:gap-6`}>
       {hasVariants
-        ? variants!.map((variant) => (
+        ? uniqueVariants.map((variant) => (
             <CustomerVariantCard key={variant.id} variant={variant} />
           ))
         : products!.map((product) => (
