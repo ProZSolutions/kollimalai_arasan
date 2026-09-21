@@ -39,14 +39,24 @@ function LoginForm() {
         password: data.password,
       },
       {
-        onSuccess: async () => {
+        onSuccess: async (response) => {
           // Sync NextAuth session and redirect
-          await signIn("credentials", {
-            email: data.email.trim(),
-            password: data.password,
-            redirect: false,
-          });
-          router.push(callbackUrl);
+          try {
+            await signIn("credentials", {
+              email: data.email.trim(),
+              password: data.password,
+              redirect: false,
+            });
+          } catch {
+            // Cookie auth is primary
+          }
+
+          const userRole = response?.data?.user?.role;
+          if ((userRole === "ADMIN" || userRole === "STAFF") && callbackUrl === "/") {
+            router.push("/admin/dashboard");
+          } else {
+            router.push(callbackUrl);
+          }
           router.refresh();
         },
       }

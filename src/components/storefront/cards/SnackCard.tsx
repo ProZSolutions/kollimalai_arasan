@@ -30,6 +30,8 @@ export interface SnackCardProps {
   href?: string;
   /** Explicit discount percentage (e.g. 10 for "10% OFF") */
   discountPercent?: number | null;
+  /** Explicit badge text to display (e.g. "BUY 3 GET 1 FREE", "10% OFF", "SPECIAL OFFER") */
+  badgeText?: string | null;
   /** List of pack size variants (e.g. 50g, 100g) */
   variants?: SnackCardVariant[];
   /** Currently selected variant ID (uncontrolled if omitted) */
@@ -76,6 +78,32 @@ function variantLabel(label: SnackCardVariant["label"]): string {
   return String(label ?? "");
 }
 
+/**
+ * Parses size / weight labels like "50 g", "100g", "1 kg", "500 gm"
+ * into a standardized numeric weight (grams, ml, etc.) to accurately identify the highest size.
+ */
+function parseSizeWeight(label: unknown): number {
+  if (!label) return 0;
+  if (typeof label === "object" && label !== null) {
+    const parts = label as { value?: string | number; unit?: string };
+    const num = parseFloat(String(parts.value ?? "")) || 0;
+    const unit = String(parts.unit || "").trim().toLowerCase();
+    if (unit === "kg" || unit === "l" || unit === "liter" || unit === "litre") return num * 1000;
+    return num;
+  }
+  const str = String(label).trim().toLowerCase();
+  const match = str.match(/^([\d.]+)\s*([a-z]*)/i);
+  if (match) {
+    const num = parseFloat(match[1]) || 0;
+    const unit = (match[2] || "").toLowerCase();
+    if (unit === "kg" || unit === "l" || unit === "liter" || unit === "litre") return num * 1000;
+    if (unit === "g" || unit === "gm" || unit === "gram" || unit === "grams") return num;
+    if (unit === "ml") return num;
+    return num;
+  }
+  return 0;
+}
+
 export function SnackCard({
   id,
   name,
@@ -83,6 +111,7 @@ export function SnackCard({
   image,
   href,
   discountPercent: explicitDiscount,
+  badgeText,
   variants = [],
   selectedVariantId: controlledSelectedVariantId,
   onVariantChange,
@@ -119,15 +148,51 @@ export function SnackCard({
     return [];
   }, [variants, product]);
 
+  // On cards, show only 2 sizes: default size (e.g. 100g) and highest size (e.g. 1kg)
+  const displayedVariants: SnackCardVariant[] = React.useMemo(() => {
+    if (resolvedVariants.length <= 2) return resolvedVariants;
+
+    const getWeight = (v: SnackCardVariant): number => {
+      const parsed = parseSizeWeight(v.label);
+      if (parsed > 0) return parsed;
+      return v.price || 0;
+    };
+
+    // Default variant is the base/first variant in the list
+    const defaultVar = resolvedVariants[0];
+
+    // Find highest variant by weight/size
+    let highestVar: SnackCardVariant = resolvedVariants[resolvedVariants.length - 1];
+    let maxWeight = getWeight(defaultVar);
+
+    for (let i = 1; i < resolvedVariants.length; i++) {
+      const v = resolvedVariants[i];
+      const w = getWeight(v);
+      if (w > maxWeight) {
+        maxWeight = w;
+        highestVar = v;
+      }
+    }
+
+    if (highestVar.id === defaultVar.id) {
+      return [defaultVar];
+    }
+
+    const wDefault = getWeight(defaultVar);
+    const wHighest = getWeight(highestVar);
+
+    return wDefault <= wHighest ? [defaultVar, highestVar] : [highestVar, defaultVar];
+  }, [resolvedVariants]);
+
   // Uncontrolled or controlled selected variant
-  const defaultVariantId = resolvedVariants[0]?.id || "";
+  const defaultVariantId = displayedVariants[0]?.id || resolvedVariants[0]?.id || "";
   const [internalSelectedId, setInternalSelectedId] = React.useState(defaultVariantId);
 
   React.useEffect(() => {
-    if (resolvedVariants.length > 0 && !resolvedVariants.some((v) => v.id === internalSelectedId)) {
-      setInternalSelectedId(resolvedVariants[0].id);
+    if (displayedVariants.length > 0 && !displayedVariants.some((v) => v.id === internalSelectedId)) {
+      setInternalSelectedId(displayedVariants[0].id);
     }
-  }, [resolvedVariants, internalSelectedId]);
+  }, [displayedVariants, internalSelectedId]);
 
   const activeVariantId =
     controlledSelectedVariantId !== undefined
@@ -136,7 +201,11 @@ export function SnackCard({
 
   // Selected variant details
   const activeVariant =
-    resolvedVariants.find((v) => v.id === activeVariantId) || resolvedVariants[0] || null;
+    displayedVariants.find((v) => v.id === activeVariantId) ||
+    resolvedVariants.find((v) => v.id === activeVariantId) ||
+    displayedVariants[0] ||
+    resolvedVariants[0] ||
+    null;
 
   const currentPrice = activeVariant ? activeVariant.price : (fallbackPrice ?? 0);
   const originalPrice = activeVariant?.comparePrice ?? null;
@@ -175,10 +244,10 @@ export function SnackCard({
           />
         </Link>
 
-        {/* Discount Badge (Top-Left) using global danger color */}
-        {discount > 0 && (
+        {/* Discount / Offer Badge (Top-Left) using global danger color */}
+        {(badgeText || discount > 0) && (
           <div className="absolute top-2.5 left-2.5 z-10 bg-[var(--danger-base)] text-white font-extrabold text-[11px] sm:text-xs px-2 py-0.5 uppercase tracking-wider rounded-[2px] shadow-xs pointer-events-none">
-            {discount}% OFF
+            {badgeText || `${discount}% OFF`}
           </div>
         )}
 
@@ -265,9 +334,9 @@ export function SnackCard({
             {/* Right Column: Variant Selector & Prices */}
             <div className="flex flex-col items-end shrink-0">
               {/* Variant Selector Pills using global brown colors */}
-              {resolvedVariants.length > 0 && (
+              {displayedVariants.length > 0 && (
                 <div className="flex items-center gap-1.5 flex-wrap justify-end">
-                  {resolvedVariants.map((v) => {
+                  {displayedVariants.map((v) => {
                     const isSelected = v.id === activeVariant?.id;
                     return (
                       <button

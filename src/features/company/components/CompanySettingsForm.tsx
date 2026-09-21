@@ -260,7 +260,7 @@ export function CompanySettingsForm() {
             <Input
               value={formData.phone || ""}
               onChange={(e) => handleInputChange("phone", e.target.value)}
-              placeholder="e.g. +91 94861 50579"
+              placeholder="e.g. +91 74181 88950"
             />
           </div>
 
@@ -300,7 +300,7 @@ export function CompanySettingsForm() {
               rows={2}
               value={formData.address || ""}
               onChange={(e) => handleInputChange("address", e.target.value)}
-              placeholder="6/1033, Thillai Nagar Trichy Road"
+              placeholder="Thuraiyur Road, N Kosavampatti"
             />
           </div>
 
